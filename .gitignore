@@ -1,0 +1,18 @@
+# Ignore the dont-push-to-github folder
+/dont-push-to-github/
+
+# Ignore all .terraform directories
+**/.terraform/
+
+# Ignore Terraform lock files
+**/.terraform.lock.hcl
+
+# Ignore Visual Studio Code directory
+**/.vscode/
+
+# Ignore .tfstate files
+*.tfstate
+*.tfstate.*
+
+# Ignore .gitignore files within env/dev
+env/dev/.gitignore

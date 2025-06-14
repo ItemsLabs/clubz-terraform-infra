@@ -1,0 +1,17 @@
+apiVersion: rabbitmq.com/v1beta1
+kind: RabbitmqCluster
+metadata:
+  name: rabbitmq-cluster
+  namespace: rabbitmq-system
+spec:
+  replicas: 2
+  persistence:
+    storageClassName: do-block-storage
+    storage: 10Gi
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 2Gi
+    limits:
+      cpu: 1000m
+      memory: 2Gi

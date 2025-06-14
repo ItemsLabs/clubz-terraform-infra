@@ -1,0 +1,2 @@
+ingressShim.defaultIssuerName: letsencrypt-prod
+ingressShim.defaultIssuerKind: ClusterIssuer

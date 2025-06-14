@@ -1,0 +1,162 @@
+name: "[prd] Deploy DO Laliga Infra"
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  AWS_REGION: us-east-1
+  AWS_MFA_ENABLED: false
+  AWS_PROFILE: infra-prd
+  ENV: prd
+  NAMESPACE: prd-fanclash
+  SSH_PUBLIC_KEY: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFsCXa8jvBRjf9Pq7WGUIe2Ct8tSs0YijT5OxTL9hsCK pc@Muharrems-MacBook-Pro.local"
+
+
+on:
+  push:
+    branches:
+      - prd
+    paths-ignore:
+      - '**.md'
+      - '**.svg'
+      - '**.png'
+      - '.gitignore'
+
+jobs:
+  changes:
+    name: code changes
+    runs-on: ubuntu-latest
+    # Set job outputs to values from filter step
+    timeout-minutes: 2
+    outputs:
+      infra: ${{ steps.filter.outputs.infra }}
+    steps:
+    - name: Setup Node.js 20
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+    - name: Checkout Code
+      uses: actions/checkout@v3
+    - name: Filter Paths
+      uses: dorny/paths-filter@v3
+      id: filter
+      with:
+        filters: |
+          infra:
+            - 'env/prd/**'
+  infra:
+    needs: 
+      - changes
+    if: ${{ needs.changes.outputs.infra == 'true' }}
+    name: infra
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    steps:
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::826737140156:role/github-actions-role
+          role-duration-seconds: 1200 # the ttl of the session, in seconds.
+          aws-region: us-east-1 # use your region here.
+      - name: create profile 
+        run: |
+          mkdir -p ~/.aws && echo -e "[${{ env.AWS_PROFILE }}]\naws_access_key_id = $AWS_ACCESS_KEY_ID\naws_secret_access_key = $AWS_SECRET_ACCESS_KEY\nregion = $AWS_DEFAULT_REGION" >> ~/.aws/credentials
+          cat ~/.aws/credentials
+          Optionally set the region in the config file too
+          echo "[profile infra-prd]" >> ~/.aws/config
+          echo "region = us-east-1" >> ~/.aws/config
+
+      - name: checkoutout
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Install doctl 
+        uses: digitalocean/action-doctl@v2
+        with:
+            token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Log in to DO Container Registry 
+        run: doctl registry login --expiry-seconds 600
+
+      - name: Configure Kubectl for DOKS
+        run: doctl kubernetes cluster kubeconfig save dev-fanclash
+
+      - name: setup terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Import GPG Key and Decrypt Terraform Secrets File
+        working-directory: ./env/${{ env.ENV }}
+        run: |
+          Import the GPG private key from the GitHub secret
+          echo "${{ secrets.GPG_PRIVATE_KEY_BASE64 }}" | base64 -d | gpg --batch --yes --import
+        
+          Ensure gpg-agent is running and configured for loopback mode
+          echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
+          echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+          gpgconf --reload gpg-agent
+
+          Decrypt the Terraform secrets file with the passphrase provided inline
+          gpg --batch --yes --pinentry-mode loopback --passphrase "prd-gpg-gameon" --decrypt --output cluster-secrets.tf cluster-secrets.tf.gpg
+
+      - name: terraform commands
+        working-directory: ./env/${{ env.ENV }}
+        id: fmt
+        run: |
+          terraform fmt -check
+        continue-on-error: true
+
+      - name: terraform init
+        working-directory: ./env/${{ env.ENV }}
+        id: init
+        run: |
+          terraform init
+
+      - name: terraform validate
+        working-directory: ./env/${{ env.ENV }}
+        id: validate
+        run: |
+          terraform validate -no-color
+
+      - name: terraform plan
+        working-directory: ./env/${{ env.ENV }}
+        id: plan
+        run: |
+          terraform plan -no-color \
+            -var="do_token=${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}" \
+            -input=false
+            # -var="do_spaces_access_id=${{ secrets.DO_SPACES_ACCESS_ID }}" \
+            # -var="do_spaces_secret_key=${{ secrets.DO_SPACES_SECRET_KEY }}" 
+      - name: terraform plan status
+        working-directory: ./env/${{ env.ENV }}
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
+
+      - name: terraform apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        working-directory: ./env/${{ env.ENV }}
+        run: |
+          terraform apply -auto-approve \
+            -var="do_token=${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}" \
+            -input=false
+           # -var="do_spaces_access_id=${{ secrets.DO_SPACES_ACCESS_ID }}" \
+           # -var="do_spaces_secret_key=${{ secrets.DO_SPACES_SECRET_KEY }}" \
+      - name: Slack Notification
+        if: always()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: production-deployments
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_NEW_PRD_URL }}
+          SLACK_ICON_EMOJI: ':gameon:'
+          SLACK_USERNAME: GitHubAction
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: 'Prd Fanclash infra deployment. Commit message:'
+          SLACK_FOOTER: Powered By GameOn DevOps team

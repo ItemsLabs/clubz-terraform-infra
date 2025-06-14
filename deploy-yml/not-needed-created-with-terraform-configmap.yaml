@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rmq-config
+data:
+  RMQ_HOST: "rabbitmq-cluster"
+  RMQ_PORT: "5672"
+  RMQ_VHOST: "ufl"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fanclash-config
+data:
+  AMQP_MATCH_EVENTS_EXCHANGE: "match_event"
+  AMQP_GAMES_EXCHANGE: "games"
+  AMQP_SYSTEM_EXCHANGE: "system"
+  STATSD_HOST: "telegraf.monitoring.svc"
+  GCE_PLAYER_IMAGES_BUCKET: "ufl-player-images"
+  GCE_TEAM_CRESTS_BUCKET: "ufl-team-crests"
+  GCE_USER_AVATAR_BUCKET: "fanclash-user-avatars"
+  GCE_OPTA_FEED_BUCKET: "ufl-opta-feeds"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mobile-api-config
+data:
+  DJANGO_SETTINGS_MODULE: "mobile_api.settings.staging"
+  REVENUE_CAT_API_KEY: "APUPZvmsHAwSCySdKizykqvGJOLdFLcX"

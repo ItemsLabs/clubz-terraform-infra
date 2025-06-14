@@ -1,0 +1,33 @@
+# datadog:
+#   # kubeStateMetricsEnabled: true
+#   # kubeStateMetricsCore:
+#   #   enabled: true
+#   # autoDiscovery:
+#   #   enabled: true
+#   # networkMonitoring:
+#   #   enabled: true
+#   # apm:
+#   #   enabled: true
+#   apiKey: "da003684f1708bb2f070bdca9adc3b82"
+#   site: "datadoghq.com"
+#   logs:
+#     enabled: true
+#     containerCollectAll: true
+
+# datadog:
+#   apiKeyExistingSecret: datadog-secret
+#   site: "datadoghq.com"
+#   logs:
+#     enabled: true
+#     containerCollectAll: true
+#   clusterName: "dev-fanclash"  # Set your cluster name here
+
+datadog:
+  apiKeyExistingSecret: datadog-secret
+  site: "datadoghq.com"
+  clusterName: "dev-fanclash"
+  logs:
+    enabled: true
+    containerCollectAll: true
+  containerExclude: "image:docker.io/cilium/* image:docker.io/coredns/* image:digitalocean/cpbridge:* image:registry.k8s.io/sig-storage/ csi-node-driver-registrar:* image:docker.io/digitalocean/do-csi-plugin:* image:docker.io/digitalocean/do-agent:* image:quay.io/cilium/hubble-* image:registry.k8s.io/kas-network-proxy/proxy-agent:* image:registry.k8s.io/kube-proxy:* image:gcr.io/datadoghq/agent:* image:gcr.io/datadoghq/cluster-agent:* image:docker.io/bitnami/rabbitmq* image:registry.k8s.io/ingress-nginx/controller:*"
+  containerInclude: "image:registry.digitalocean.com/gameon-ams3/laliga-matchfantasy-api:* image:registry.digitalocean.com/gameon-ams3/laliga-matchfantasy-event-processor:* image:registry.digitalocean.com/gameon-ams3/laliga-matchfantasy-fcm-pusher:* image:registry.digitalocean.com/gameon-ams3/laliga-matchfantasy-admin:*"

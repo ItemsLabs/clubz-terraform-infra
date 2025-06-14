@@ -1,0 +1,87 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    kubernetes.io/tls-acme: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  name: fanclash-ingress
+  namespace: fanclash-dev
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: laliga.gamebuild.co
+    http:
+        paths:
+        - pathType: Prefix
+          path: "/"
+          backend:
+            service:
+              name: mobile-api
+              port:
+                number: 80
+        - pathType: Prefix
+          path: "/api/revenuecat/sync/"
+          backend:
+            service:
+              name: mobile-api
+              port:
+                number: 80
+        - pathType: Prefix
+          path: "/api/users/profile/avatar/"
+          backend:
+            service:
+              name: mobile-api
+              port:
+                number: 80
+        - pathType: Prefix
+          path: "/api/users/profile/avatar/"
+          backend:
+            service:
+              name: mobile-api
+              port:
+                number: 80
+        - pathType: Prefix
+          path: "/api"
+          backend:
+            service:
+              name: fanclash-api
+              port:
+                number: 80
+        - pathType: Prefix
+          path: "/api/ws"
+          backend:
+            service:
+              name: fanclash-api-ws
+              port:
+                number: 80
+
+  tls:
+  - secretName: letsencrypt-prod
+    hosts:
+    - laliga.gamebuild.co
+        # paths:
+        # - path: /
+        #   backend:
+        #     serviceName: mobile-api-staging
+        #     servicePort: 80
+
+        # - path: /api
+        #   backend:
+        #     serviceName: fanclash-api-staging
+        #     servicePort: 80
+
+        # - path: /api/revenuecat/sync/
+        #   backend:
+        #     serviceName: mobile-api-production
+        #     servicePort: 80
+
+        # - path: /api/users/profile/avatar/
+        #   backend:
+        #     serviceName: mobile-api-staging
+        #     servicePort: 80
+
+        # - path: /api/ws
+        #   backend:
+        #     serviceName: fanclash-api-ws-staging
+        #     servicePort: 80

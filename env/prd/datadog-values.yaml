@@ -1,0 +1,33 @@
+# # datadog:
+# #   # kubeStateMetricsEnabled: true
+# #   # kubeStateMetricsCore:
+# #   #   enabled: true
+# #   # autoDiscovery:
+# #   #   enabled: true
+# #   # networkMonitoring:
+# #   #   enabled: true
+# #   # apm:
+# #   #   enabled: true
+# #   apiKey: "da003684f1708bb2f070bdca9adc3b82"
+# #   site: "datadoghq.com"
+# #   logs:
+# #     enabled: true
+# #     containerCollectAll: true
+
+# # datadog:
+# #   apiKeyExistingSecret: datadog-secret
+# #   site: "datadoghq.com"
+# #   logs:
+# #     enabled: true
+# #     containerCollectAll: true
+# #   clusterName: "dev-fanclash"  # Set your cluster name here
+
+# datadog:
+#   apiKeyExistingSecret: datadog-secret
+#   site: "datadoghq.com"
+#   clusterName: "fanclash-prd"
+# #  containerExclude: "image:^registry.digitalocean.com/gameon-ams3/laliga-matchfantasy-rabbitmq-publisher$"
+#   logs:
+#     enabled: true
+#     containerCollectAll: true
+
