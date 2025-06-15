@@ -87,3 +87,16 @@ variable "do_spaces_secret_key" {
 #   type        = number
 #   default     = 1
 # }
+
+variable "database_password" {
+  type        = string
+  description = "PostgreSQL database password - set via TF_VAR_database_password environment variable"
+  sensitive   = true
+}
+
+variable "fcm_credentials" {
+  type        = string
+  description = "FCM/Firebase credentials JSON - set via TF_VAR_fcm_credentials environment variable"
+  sensitive   = true
+  default     = ""
+}
